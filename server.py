@@ -21,8 +21,7 @@ MODEL_PATH = os.getenv('MODEL_PATH', '/app/models')
 classifier = pipeline(
     "image-classification",
     model=f"howdyaendra/{MODEL_NAME}",
-    cache_dir=MODEL_PATH,
-    local_files_only=True  # Ensure it uses the local model
+    device="cuda"
 )
 
 async def process_request(job):
