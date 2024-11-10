@@ -87,7 +87,7 @@ def adjust_concurrency(current_concurrency):
     Adjusts the concurrency level based on the current request rate.
     For this example, we'll keep the concurrency level fixed.
     """
-    return 10
+    return 100
 
 # Start the serverless function with the handler and concurrency modifier
 runpod.serverless.start(
