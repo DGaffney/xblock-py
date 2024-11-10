@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   xblock_py_image_classifier:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
