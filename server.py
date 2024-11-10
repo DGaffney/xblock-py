@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import asyncio
 import torch
@@ -17,13 +18,15 @@ MODEL_NAME_LARGE = os.getenv('MODEL_NAME_LARGE', 'xblock-large-patch3-224')
 MODEL_NAME = MODEL_NAME_LARGE
 MODEL_PATH = os.getenv('MODEL_PATH', '/app/models')
 
-# Initialize the image classification pipeline
+# Check if CUDA (GPU) is available; if not, default to CPU
+device = 0 if torch.cuda.is_available() else -1
+
+# Load the classifier pipeline, using GPU if available
 classifier = pipeline(
     "image-classification",
     model=f"howdyaendra/{MODEL_NAME}",
-    device="cuda"
+    device=device  # Use GPU if available, otherwise CPU
 )
-
 async def process_request(job):
     """
     Asynchronous handler function to process incoming requests.
@@ -64,27 +67,9 @@ def adjust_concurrency(current_concurrency):
     Adjusts the concurrency level based on the current request rate.
     For this example, we'll keep the concurrency level fixed.
     """
-    max_concurrency = 5
-    min_concurrency = 1
-
-    # For now, return a fixed concurrency level
-    return max(min_concurrency, min(max_concurrency, current_concurrency))
+    return 10
 
 # Start the serverless function with the handler and concurrency modifier
 runpod.serverless.start(
     {"handler": process_request, "concurrency_modifier": adjust_concurrency}
 )
-
-# if __name__ == "__main__":
-#     # Simulate a job
-#     job = {
-#         "input": {
-#             "image_url": "https://example.com/path/to/your/image.jpg",
-#             "top_k": 4
-#         }
-#     }
-#
-#     # Run the async function
-#     import asyncio
-#     result = asyncio.run(process_request(job))
-#     print(result)

@@ -1,5 +1,5 @@
 # Use the official Python 3.9 slim image
-FROM python:3.9-slim-buster
+FROM python:3.10
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
@@ -30,14 +30,17 @@ RUN pip install --no-cache-dir \
 COPY server.py .
 
 # Download the model during the build
-RUN mkdir -p $MODEL_PATH && \
-    python -c "\
-from transformers import AutoModelForImageClassification, AutoFeatureExtractor;\
-model = AutoModelForImageClassification.from_pretrained('howdyaendra/$MODEL_NAME', cache_dir='$MODEL_PATH');\
-feature_extractor = AutoFeatureExtractor.from_pretrained('howdyaendra/$MODEL_NAME', cache_dir='$MODEL_PATH');"
+# RUN mkdir -p $MODEL_PATH && \
+#     python -c "\
+# from transformers import AutoModelForImageClassification, AutoFeatureExtractor;\
+# model = AutoModelForImageClassification.from_pretrained('howdyaendra/$MODEL_NAME', cache_dir='$MODEL_PATH');\
+# feature_extractor = AutoFeatureExtractor.from_pretrained('howdyaendra/$MODEL_NAME', cache_dir='$MODEL_PATH');"
 
-# Set the cache directory to the model path
-ENV TRANSFORMERS_CACHE=$MODEL_PATH
-
-# Set the entrypoint or command
-CMD ["python", "server.py"]
+# Set the cache directory to the model path using HF_HOME
+ENV HF_HOME=$MODEL_PATH
+RUN apt-get update && apt-get install -y nano tmux rsync cron
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+RUN pip install --no-cache-dir runpod
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["./entrypoint.sh"]
