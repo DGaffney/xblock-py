@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  xblock_py_image_classifier:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: xblock_py_image_classifier:latest
+    container_name: xblock_py_image_classifier
+    volumes:
+      - ./models:/app/models  # Optional: to persist models outside the container
+    environment:
+      - MODEL_NAME_LARGE=xblock-large-patch3-224
+      - MODEL_NAME=${MODEL_NAME_LARGE}
+      - MODEL_PATH=/app/models
+    command: python server.py
