@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import asyncio
+import time
 import torch
 from transformers import pipeline
 import runpod
@@ -27,6 +28,7 @@ classifier = pipeline(
     model=f"howdyaendra/{MODEL_NAME}",
     device=device  # Use GPU if available, otherwise CPU
 )
+
 async def process_request(job):
     """
     Asynchronous handler function to process incoming requests.
@@ -38,6 +40,9 @@ async def process_request(job):
 
         if not image_url:
             return {'error': 'No image_url provided in the input.'}
+
+        # Measure download time
+        download_start = time.time()
 
         # Download the image asynchronously if it's a URL
         if image_url.startswith('http://') or image_url.startswith('https://'):
@@ -51,12 +56,27 @@ async def process_request(job):
             # Load the image from a local path
             image = Image.open(image_url).convert('RGB')
 
+        download_end = time.time()
+        download_time = download_end - download_start
+
+        # Measure classification time
+        classification_start = time.time()
+        
         # Perform the classification
         loop = asyncio.get_event_loop()
-        results = await loop.run_in_executor(None, classifier, image, top_k)
+        results = await loop.run_in_executor(None, classifier, image)
 
-        # Return the results
-        return {'results': results}
+        classification_end = time.time()
+        classification_time = classification_end - classification_start
+
+        # Return the results along with timing information
+        return {
+            'results': results,
+            'timing': {
+                'download_time': download_time,
+                'classification_time': classification_time
+            }
+        }
 
     except Exception as e:
         # Handle exceptions and return an error message
