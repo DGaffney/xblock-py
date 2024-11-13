@@ -27,6 +27,7 @@ RUN pip install --no-cache-dir \
     aiohttp
 
 # Copy your Python script into the container
+RUN apt-get update && apt-get install -y nano tmux rsync cron
 COPY server.py .
 
 # Download the model during the build
@@ -38,7 +39,6 @@ COPY server.py .
 
 # Set the cache directory to the model path using HF_HOME
 ENV HF_HOME=$MODEL_PATH
-RUN apt-get update && apt-get install -y nano tmux rsync cron
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 RUN pip install --no-cache-dir runpod

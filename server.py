@@ -15,19 +15,22 @@ import aiohttp
 torch.set_num_threads(1)
 
 # Use environment variables
-MODEL_NAME_LARGE = os.getenv('MODEL_NAME_LARGE', 'xblock-large-patch3-224')
+MODEL_NAME_LARGE = os.getenv('MODEL_NAME_LARGE', 'howdyaendra/swin_s3_base_224-xblockm-timm') #WAS: xblock-large-patch3-224
 MODEL_NAME = MODEL_NAME_LARGE
 MODEL_PATH = os.getenv('MODEL_PATH', '/app/models')
 
 # Check if CUDA (GPU) is available; if not, default to CPU
 device = 0 if torch.cuda.is_available() else -1
+torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
 # Load the classifier pipeline, using GPU if available
 classifier = pipeline(
     "image-classification",
     model=f"howdyaendra/{MODEL_NAME}",
-    device=device  # Use GPU if available, otherwise CPU
+    device=device,
+    torch_dtype=torch_dtype
 )
+
 
 async def process_request(job):
     """
@@ -93,3 +96,13 @@ def adjust_concurrency(current_concurrency):
 runpod.serverless.start(
     {"handler": process_request, "concurrency_modifier": adjust_concurrency}
 )
+
+       # with torch.no_grad():
+       #      logits = model(inputs)
+       #
+       #  # apply sigmoid activation to convert logits to probabilities
+       #  # getting labels with confidence threshold of 0.5
+       #  predictions = logits.sigmoid() > 0.5
+       #
+       #  # converting one-hot encoded predictions back to list of labels
+       #  predictions = predictions.float().numpy().flatten() # convert boolean predictions to float
