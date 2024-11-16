@@ -3,7 +3,7 @@ FROM python:3.10
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV MODEL_NAME_LARGE="xblock-large-patch3-224"
+ENV MODEL_NAME_LARGE="swin_s3_base_224-xblockm-timm"
 ENV MODEL_NAME=$MODEL_NAME_LARGE
 ENV MODEL_PATH="/app/models"
 
@@ -18,9 +18,14 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
+# RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip install numpy==1.26.4
 RUN pip install --no-cache-dir \
     torch \
     transformers \
+    torchvision \
+    timm \
+    sentence-transformers \
     requests \
     pillow \
     runpod \
